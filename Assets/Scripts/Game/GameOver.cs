@@ -4,13 +4,18 @@ using UnityEngine.SceneManagement;
 
 public class GameOver : MonoBehaviour
 {
-    public GameObject gameOver;
+    public GameObject gameOverImage;
     public TextMeshProUGUI winnerText;
 
-    public void SetName(string s)
+    public void SetWin(Player player)
     {
-        if(s == "X") winnerText.text = StartGame.playerName1 + " Wins!";
+        if(player == Player.CROSS) winnerText.text = StartGame.playerName1 + " Wins!";
         else winnerText.text = StartGame.playerName2 + " Wins!";
+    }
+
+    public void SetDraw()
+    {
+        winnerText.text = "It's a Draw!";
     }
 
     public void PlayAgain()
