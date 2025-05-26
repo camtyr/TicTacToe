@@ -6,6 +6,7 @@ public class TicTacToeAI
 {
     private Player[,] matrix;
     private int boardSize;
+    private int winCondition;
     private int maxDepth;
     private List<Vector2Int> emptyCells;
 
@@ -13,6 +14,7 @@ public class TicTacToeAI
     {
         this.matrix = matrix;
         this.boardSize = (int)Mathf.Sqrt(matrix.Length);
+        this.winCondition = boardSize == 3 ? 3 : (boardSize == 5 ? 4 : 5);
         this.maxDepth = 4;
         this.emptyCells = new List<Vector2Int>();
         UpdateEmptyCells();
@@ -48,7 +50,6 @@ public class TicTacToeAI
         }
     }
 
-    // hàm kiểm tra ô chưa được đánh có ở gần ô đã đánh nào không (hiện tại em để radius là 2 vì )
     private bool IsNearOccupied(int row, int col, int radius)
     {
         for (int i = -radius; i <= radius; i++)
@@ -68,15 +69,6 @@ public class TicTacToeAI
             }
         }
         return false;
-    }
-
-    private int EvaluateMove(int row, int col, Player player)
-    {
-        int score = 0;
-        matrix[row, col] = player;
-        score += EvaluateBoard(matrix, player == Player.NOUGHT);
-        matrix[row, col] = Player.EMPTY;
-        return score;
     }
 
     public Vector2Int GetBestMove()
@@ -109,14 +101,16 @@ public class TicTacToeAI
         return bestMove;
     }
 
-    private int Minimax(Player[,] matrix, bool isMaximizing, int depth, int lastMoveRow, int lastMoveCol, int alpha, int beta)
+    private int Minimax(Player[,] matrix, bool isMaximizing, int depth, int lastMoveRow, int lastMoveCol, int alpha, int beta) // lastMoveRow và laseMoveCol là row và col của ô đã đánh trước đó
     {
         Player previousTurn = isMaximizing ? Player.CROSS : Player.NOUGHT;
         Player currentTurn = isMaximizing ? Player.NOUGHT : Player.CROSS;
 
-        if (GameLogic.CheckWin(matrix, lastMoveRow, lastMoveCol, previousTurn))
+        // tính điểm cho nước đi thực hiện trước đó
+
+        if (GameLogic.CheckWin(matrix, lastMoveRow, lastMoveCol, previousTurn, winCondition))
         {
-            return isMaximizing ? -100000 + depth : 100000 - depth;
+            return isMaximizing ? -100000 : 100000;
         }
 
         if (GameLogic.IsBoardFull(matrix))
@@ -124,27 +118,27 @@ public class TicTacToeAI
             return 0;
         }
 
-        if (depth == maxDepth)
+        if (depth == maxDepth) // đạt độ sâu tối đa cho phép thì tính điểm board tại trạng thái đó
         {
             return EvaluateBoard(matrix, isMaximizing);
         }
 
-        int bestScore = isMaximizing ? int.MinValue : int.MaxValue;
+        int bestScore = isMaximizing ? int.MinValue : int.MaxValue; // khởi tạo bestscore với giá trị thấp nhất hoặc lớn nhất của kiểu dữ liệu int
 
         List<Vector2Int> currentEmptyCells = new List<Vector2Int>(emptyCells);
 
-        foreach (Vector2Int cell in currentEmptyCells)
+        foreach (Vector2Int cell in currentEmptyCells) // duyệt các ô còn trống hiện tại
         {
             int row = cell.x;
             int col = cell.y;
 
-            matrix[row, col] = currentTurn;
-            emptyCells.Remove(cell);
+            matrix[row, col] = currentTurn; // giả định đánh vào ô này rồi thực hiện đệ quy trả về score
+            emptyCells.Remove(cell); // đồng thời giả định bỏ ô này trong danh sách các ô trống
 
             int score = Minimax(matrix, !isMaximizing, depth + 1, row, col, alpha, beta);
 
-            matrix[row, col] = Player.EMPTY;
-            emptyCells.Add(cell);
+            matrix[row, col] = Player.EMPTY; // hoàn trả ô giả định
+            emptyCells.Add(cell); // hoàn trả ô giả định
 
             if (isMaximizing)
             {
@@ -157,7 +151,7 @@ public class TicTacToeAI
                 beta = Mathf.Min(beta, bestScore);
             }
 
-            if (alpha >= beta) break;
+            if (alpha >= beta) break; // cắt tỉa alpha-beta
         }
         return bestScore;
     }
@@ -311,12 +305,10 @@ public class TicTacToeAI
 
     private int ScorePattern(int count, bool isOpenStart, bool isOpenEnd)
     {
-        if (count >= 5)
-            return 100000;
         if (count == 4)
-            return isOpenStart && isOpenEnd ? 10000 : (isOpenStart || isOpenEnd ? 5000 : 0);
+            return winCondition <= 4 ? 10000 : (isOpenStart && isOpenEnd ? 10000 : (isOpenStart || isOpenEnd ? 5000 : 0));
         if (count == 3)
-            return isOpenStart && isOpenEnd ? 1000 : (isOpenStart || isOpenEnd ? 500 : 0);
+            return winCondition == 3 ? 1000: (isOpenStart && isOpenEnd ? 1000 : (isOpenStart || isOpenEnd ? 500 : 0));
         if (count == 2)
             return isOpenStart && isOpenEnd ? 100 : (isOpenStart || isOpenEnd ? 50 : 0);
         if (count == 1)

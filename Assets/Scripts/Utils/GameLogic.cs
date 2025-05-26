@@ -2,18 +2,17 @@ using UnityEngine;
 
 public static class GameLogic
 {
-    public static bool CheckWin(Player[,] matrix, int row, int col, Player currentTurn)
+    public static bool CheckWin(Player[,] matrix, int row, int col, Player currentTurn, int winCondition)
     {
-        return CheckDirection(matrix, row, col, 1, 0, currentTurn) ||
-               CheckDirection(matrix, row, col, 0, 1, currentTurn) ||
-               CheckDirection(matrix, row, col, 1, 1, currentTurn) ||
-               CheckDirection(matrix, row, col, 1, -1, currentTurn);
+        return CheckDirection(matrix, row, col, 1, 0, currentTurn, winCondition) ||
+               CheckDirection(matrix, row, col, 0, 1, currentTurn, winCondition) ||
+               CheckDirection(matrix, row, col, 1, 1, currentTurn, winCondition) ||
+               CheckDirection(matrix, row, col, 1, -1, currentTurn, winCondition);
     }
 
-    public static bool CheckDirection(Player[,] matrix, int row, int col, int countRow, int countCol, Player currentTurn)
+    public static bool CheckDirection(Player[,] matrix, int row, int col, int countRow, int countCol, Player currentTurn, int winCondition)
     {
         int count = 1;
-        int winCondition = 5;
         int boardSize = (int)Mathf.Sqrt(matrix.Length);
         for (int i = 1; i < winCondition; i++)
         {

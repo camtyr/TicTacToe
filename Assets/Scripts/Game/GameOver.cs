@@ -1,3 +1,4 @@
+using Assets.Scripts.Utils;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -9,8 +10,8 @@ public class GameOver : MonoBehaviour
 
     public void SetWin(Player player)
     {
-        if(player == Player.CROSS) winnerText.text = StartGame.playerName1 + " Wins!";
-        else winnerText.text = StartGame.playerName2 + " Wins!";
+        if(player == Player.CROSS) winnerText.text = GameConfig.player1Name + " Wins!";
+        else winnerText.text = GameConfig.player2Name + " Wins!";
     }
 
     public void SetDraw()
@@ -21,5 +22,10 @@ public class GameOver : MonoBehaviour
     public void PlayAgain()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void ReturnToMenu()
+    {
+        SceneManager.LoadScene("StartGameScene");
     }
 }

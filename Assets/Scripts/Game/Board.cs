@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Assets.Scripts.Utils;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,18 +15,22 @@ public class Board : MonoBehaviour
 
     public string gameMode;
     public int boardSize;
+    public int winCondition;
     public Player currentTurn;
     public Player[,] matrix;
     public bool isGameOver = false;
+    public bool isAITurn = false;
 
     private void Awake()
     {
-        gridLayoutGroup = GetComponent<GridLayoutGroup>();
-        gridLayoutGroup.constraintCount = boardSize;
-
-        gameMode = StartGame.gameMode;
+        gameMode = GameConfig.gameMode;
+        boardSize = GameConfig.boardSize;
+        winCondition = boardSize == 3 ? 3 : (boardSize == 5 ? 4 : 5);
         currentTurn = Player.CROSS;
         matrix = new Player[boardSize, boardSize];
+
+        gridLayoutGroup = GetComponent<GridLayoutGroup>();
+        gridLayoutGroup.constraintCount = boardSize;
     }
 
     private void Start()
@@ -53,7 +58,7 @@ public class Board : MonoBehaviour
             matrix[row, col] = currentTurn;
             board.GetChild(row * boardSize + col).GetComponent<Cell>().ChangeImage(currentTurn);
 
-            if (GameLogic.CheckWin(matrix, row, col, currentTurn))
+            if (GameLogic.CheckWin(matrix, row, col, currentTurn, winCondition))
             {
                 isGameOver = true;
                 gameOver.gameOverImage.SetActive(true);
@@ -69,7 +74,7 @@ public class Board : MonoBehaviour
             {
                 currentTurn = (currentTurn == Player.CROSS) ? Player.NOUGHT : Player.CROSS;
                 UpdatePlayerTurn();
-                if (currentTurn == Player.NOUGHT && gameMode == "vsbot")
+                if (currentTurn == Player.NOUGHT && gameMode == "pvb")
                 {
                     StartCoroutine(AIPlay());
                 }
@@ -79,15 +84,17 @@ public class Board : MonoBehaviour
 
     private void UpdatePlayerTurn()
     {
-        playerTurn.text = $"{(currentTurn == Player.CROSS ? StartGame.playerName1 : StartGame.playerName2)}'s turn";
+        playerTurn.text = $"{(currentTurn == Player.CROSS ? GameConfig.player1Name : GameConfig.player2Name)}'s turn";
     }
 
     private IEnumerator AIPlay()
     {
+        isAITurn = true;
         yield return new WaitForSeconds(0.5f);
         TicTacToeAI ai = new TicTacToeAI(matrix);
         Vector2Int bestMove = ai.GetBestMove();
         MakeMove(bestMove.x, bestMove.y);
+        isAITurn = false;
     }
 
     private bool IsBoardFull()

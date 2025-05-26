@@ -1,3 +1,4 @@
+using Assets.Scripts.Utils;
 using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
@@ -5,18 +6,33 @@ using UnityEngine.SceneManagement;
 
 public class StartGame : MonoBehaviour
 {
-    public static string gameMode;
-    public static string playerName1, playerName2;
+    public GameObject BoardsizeSelectionImage;
 
-    private void Update()
+    public void OnSelectMode(string mode)
     {
-        playerName1 = "Player 1";
-        playerName2 = gameMode == "vsbot" ? "bot" : "Player 2";
+        GameConfig.gameMode = mode;
+
+        if (GameConfig.gameMode == "pvb")
+        {
+            GameConfig.player1Name = "Player";
+            GameConfig.player2Name = "Bot";
+        }
+        else
+        {
+            GameConfig.player1Name = "Player 1";
+            GameConfig.player2Name = "Player 2";
+        }
+
+        BoardsizeSelectionImage.SetActive(true);
+    }
+    public void OnSelectBoardsize(int size)
+    {
+        GameConfig.boardSize = size;
+        SceneManager.LoadScene("GameScene");
     }
 
-    public void SelectedMode(string mode)
+    public void CloseBoardsizeSelectionImage()
     {
-        gameMode = mode;
-        SceneManager.LoadScene("GameScene");
+        BoardsizeSelectionImage.SetActive(false);
     }
 }

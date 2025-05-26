@@ -31,7 +31,7 @@ public class Cell : MonoBehaviour
 
     public void OnClick()
     {
-        board.MakeMove(row, col);
+        if(board.isAITurn == false) board.MakeMove(row, col);
     }
 
     public void ChangeImage(Player player)
